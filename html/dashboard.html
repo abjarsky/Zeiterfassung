@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Zeiterfassung</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Zeiterfassungs-Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="history.html">Verlauf</a></li>
+                <li><a href="../php/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section>
+            <h2>Arbeitszeit erfassen</h2>
+            <form action="../php/save_time.php" method="POST">
+                <label for="customer_name">Kundenname:</label>
+                <input type="text" id="customer_name" name="customer_name" required>
+                
+                <label for="customer_address">Adresse:</label>
+                <input type="text" id="customer_address" name="customer_address" required>
+                
+                <label for="employee_name">Mitarbeiter:</label>
+                <input type="text" id="employee_name" name="employee_name" required>
+                
+                <label for="start_time">Startdatum & Uhrzeit:</label>
+                <input type="datetime-local" id="start_time" name="start_time" required>
+                
+                <label for="end_time">Enddatum & Uhrzeit:</label>
+                <input type="datetime-local" id="end_time" name="end_time" required>
+                
+                <label for="break_time">Pause (Minuten, optional):</label>
+                <input type="number" id="break_time" name="break_time" min="0">
+                
+                <label for="total_time">Automatisch berechnete Arbeitszeit:</label>
+                <input type="text" id="total_time" name="total_time" readonly>
+                
+                <button type="submit">Weiter zur Bestätigung</button>
+            </form>
+        </section>
+        
+        <section>
+            <h3>Live-Standorte der Mitarbeiter</h3>
+            <div id="map" style="width: 100%; height: 400px;"></div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 Koria KFZ-Gutachter - Zeiterfassungssystem</p>
+    </footer>
+    
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu3vsI-zYmc5Zoe1AeCJV92c08cdSBpfg&callback=initMap" async defer></script>
+    <script>
+        function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 10,
+                center: { lat: 50.1109, lng: 8.6821 }
+            });
+        }
+
+        document.getElementById("end_time").addEventListener("change", function() {
+            let start = new Date(document.getElementById("start_time").value);
+            let end = new Date(document.getElementById("end_time").value);
+            let breakTime = parseInt(document.getElementById("break_time").value) || 0;
+            
+            if (start && end) {
+                let diff = (end - start) / (1000 * 60); // Minuten
+                let total = Math.max(0, diff - breakTime);
+                document.getElementById("total_time").value = total + " Minuten";
+            }
+        });
+    </script>
+</body>
+</html>

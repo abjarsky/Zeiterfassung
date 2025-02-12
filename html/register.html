@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrierung | Zeiterfassung</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Zeiterfassungssystem</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Startseite</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section>
+            <h2>Registrierung</h2>
+            <form action="../php/register.php" method="POST">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+                
+                <label for="email">E-Mail:</label>
+                <input type="email" id="email" name="email" required>
+                
+                <label for="password">Passwort:</label>
+                <input type="password" id="password" name="password" required>
+                
+                <label for="confirm_password">Passwort bestätigen:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+                
+                <button type="submit">Registrieren</button>
+            </form>
+            <p>Bereits ein Konto? <a href="login.html">Hier einloggen</a></p>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 Koria KFZ-Gutachter - Zeiterfassungssystem</p>
+    </footer>
+</body>
+</html>

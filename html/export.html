@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datenexport | Zeiterfassung</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Datenexport</h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="history.html">Verlauf</a></li>
+                <li><a href="../php/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <section>
+            <h2>Zeiterfassungsdaten exportieren</h2>
+            <p>Hier können Sie die erfassten Arbeitszeiten als CSV oder Excel-Datei exportieren.</p>
+            
+            <form action="../php/export_csv.php" method="POST">
+                <button type="submit">CSV-Export</button>
+            </form>
+            
+            <form action="../php/export_xls.php" method="POST">
+                <button type="submit">Excel-Export</button>
+            </form>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 Koria KFZ-Gutachter - Zeiterfassungssystem</p>
+    </footer>
+</body>
+</html>
