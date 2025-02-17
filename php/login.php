@@ -7,6 +7,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"]);
     $password = $_POST["password"];
 
+    // Benutzer aus der Datenbank abrufen
     $stmt = $conn->prepare("SELECT id, name, password, role FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -20,13 +21,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION["user_id"] = $id;
             $_SESSION["user_name"] = $name;
             $_SESSION["user_role"] = $role;
-            
-            echo "Erfolgreich eingeloggt. <a href='../html/dashboard.html'>Zum Dashboard</a>";
+
+            // Weiterleitung abhängig von der Benutzerrolle
+            if ($role === 'admin') {
+                header("Location: ../html/dashboard.html");
+            } else {
+                header("Location: ../html/time_tracking.html");
+            }
+            exit();
         } else {
-            echo "Falsches Passwort.";
+            echo "<script>alert('Falsches Passwort.'); window.location.href='../html/index.html';</script>";
         }
     } else {
-        echo "E-Mail nicht gefunden.";
+        echo "<script>alert('E-Mail nicht gefunden.'); window.location.href='../html/index.html';</script>";
     }
     
     $stmt->close();

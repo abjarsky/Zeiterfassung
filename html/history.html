@@ -8,12 +8,12 @@
 </head>
 <body>
     <header>
-        <h1>Zeiterfassungsverlauf</h1>
+        <h1>Zeiterfassungs-Verlauf</h1>
         <nav>
             <ul>
                 <li><a href="dashboard.html">Dashboard</a></li>
-                <li><a href="time_tracking.html">Zeiterfassung</a></li>
-                <li><a href="export.html">Datenexport</a></li>
+                <li><a href="history.html">Verlauf</a></li>
+                <li><a href="export.html">Export</a></li>
                 <li><a href="../php/logout.php">Logout</a></li>
             </ul>
         </nav>
@@ -21,23 +21,31 @@
     
     <main>
         <section>
-            <h2>Erfasste Arbeitszeiten</h2>
+            <h2>Gespeicherte Zeiterfassungen</h2>
             <table>
                 <thead>
                     <tr>
+                        <th>Vorname</th>
+                        <th>Nachname</th>
+                        <th>Adresse</th>
+                        <th>PLZ</th>
+                        <th>Ort</th>
                         <th>Mitarbeiter</th>
+                        <th>Datum</th>
                         <th>Startzeit</th>
                         <th>Endzeit</th>
-                        <th>Kunde</th>
-                        <th>Start-Standort</th>
-                        <th>End-Standort</th>
+                        <th>Pause</th>
+                        <th>Arbeitszeit</th>
+                        <th>Geostandort</th>
                         <th>Unterschrift</th>
+                        <th>Aktionen</th>
                     </tr>
                 </thead>
                 <tbody id="history-data">
                     <!-- Dynamisch geladene Zeiterfassungsdaten -->
                 </tbody>
             </table>
+            <p id="no-data" style="display: none; text-align: center; color: red;">Keine Zeiterfassungsdaten gefunden.</p>
         </section>
     </main>
     
@@ -51,22 +59,96 @@
                 .then(response => response.json())
                 .then(data => {
                     let tableBody = document.getElementById("history-data");
-                    data.forEach(entry => {
-                        let row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td>${entry.mitarbeiter}</td>
-                            <td>${entry.start_time}</td>
-                            <td>${entry.end_time}</td>
-                            <td>${entry.customer_name}</td>
-                            <td>${entry.start_location}</td>
-                            <td>${entry.end_location}</td>
-                            <td><img src="${entry.signature}" width="100"></td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
+                    let noDataMessage = document.getElementById("no-data");
+
+                    if (data.length === 0) {
+                        noDataMessage.style.display = "block";
+                    } else {
+                        data.forEach(entry => {
+                            let row = document.createElement("tr");
+                            row.setAttribute("data-id", entry.id);
+
+                            row.innerHTML = `
+                                <td contenteditable="false" data-field="customer_firstname">${entry.customer_firstname}</td>
+                                <td contenteditable="false" data-field="customer_lastname">${entry.customer_lastname}</td>
+                                <td contenteditable="false" data-field="customer_address">${entry.customer_address}</td>
+                                <td contenteditable="false" data-field="customer_zip">${entry.customer_zip}</td>
+                                <td contenteditable="false" data-field="customer_city">${entry.customer_city}</td>
+                                <td contenteditable="false" data-field="employee_name">${entry.employee_name}</td>
+                                <td contenteditable="false" data-field="work_date">${entry.work_date}</td>
+                                <td contenteditable="false" data-field="start_time">${entry.start_time}</td>
+                                <td contenteditable="false" data-field="end_time">${entry.end_time}</td>
+                                <td contenteditable="false" data-field="break_time">${entry.break_time} min</td>
+                                <td contenteditable="false" data-field="total_time">${entry.total_time}</td>
+                                <td>${entry.geo_location || "-"}</td>
+                                <td>
+                                    ${entry.signature ? `<a href="${entry.signature}" download><img src="${entry.signature}" width="100"></a>` : "Keine"}
+                                </td>
+                                <td>
+                                    <button onclick="editEntry(this, ${entry.id})">Bearbeiten</button>
+                                    <button onclick="deleteEntry(${entry.id}, this)">Löschen</button>
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
                 })
-                .catch(error => console.error("Fehler beim Laden der Daten:", error));
+                .catch(error => {
+                    console.error("Fehler beim Laden der Daten:", error);
+                    document.getElementById("no-data").style.display = "block";
+                });
         });
+
+        function editEntry(button, id) {
+            let row = button.parentElement.parentElement;
+            let isEditing = row.getAttribute("data-editing") === "true";
+
+            if (isEditing) {
+                row.querySelectorAll("[contenteditable=true]").forEach(cell => {
+                    let field = cell.getAttribute("data-field");
+                    let newValue = cell.textContent.trim();
+
+                    fetch("../php/update_time.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id, field, newValue })
+                    })
+                    .then(response => response.text())
+                    .then(result => {
+                        alert(result);
+                    })
+                    .catch(error => console.error("Fehler beim Speichern:", error));
+
+                    cell.setAttribute("contenteditable", "false");
+                });
+
+                button.textContent = "Bearbeiten";
+                row.setAttribute("data-editing", "false");
+            } else {
+                row.querySelectorAll("[data-field]").forEach(cell => {
+                    cell.setAttribute("contenteditable", "true");
+                });
+
+                button.textContent = "Speichern";
+                row.setAttribute("data-editing", "true");
+            }
+        }
+
+        function deleteEntry(id, button) {
+            if (!confirm("Möchtest du diesen Eintrag wirklich löschen?")) return;
+
+            fetch("../php/delete_time.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id })
+            })
+            .then(response => response.text())
+            .then(result => {
+                alert(result);
+                button.parentElement.parentElement.remove();
+            })
+            .catch(error => console.error("Fehler beim Löschen:", error));
+        }
     </script>
 </body>
 </html>

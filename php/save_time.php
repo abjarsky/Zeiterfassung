@@ -8,22 +8,34 @@ if (!isset($_SESSION["user_id"])) {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_id = $_SESSION["user_id"];
-    $customer_name = $_POST["customer_name"] ?? '';
+    
+    // Kundendaten
+    $customer_firstname = $_POST["customer_firstname"] ?? '';
+    $customer_lastname = $_POST["customer_lastname"] ?? '';
     $customer_address = $_POST["customer_address"] ?? '';
+    $customer_zip = $_POST["customer_zip"] ?? '';
+    $customer_city = $_POST["customer_city"] ?? '';
+
+    // Mitarbeiterdaten
     $employee_name = $_POST["employee_name"] ?? '';
+
+    // Arbeitszeiten
+    $work_date = $_POST["work_date"] ?? ''; // Arbeitsdatum
     $start_time = $_POST["start_time"] ?? '';
     $end_time = $_POST["end_time"] ?? '';
     $break_time = $_POST["break_time"] ?? '0';
     $total_time = $_POST["total_time"] ?? '';
-    $start_location = $_POST["start_location"] ?? '';
-    $end_location = $_POST["end_location"] ?? '';
-    $customer_info = $_POST["customer_info"] ?? '';
-    $signature = $_POST["signature"] ?? '';
 
-    // Prüfen, ob eine Unterschrift vorhanden ist
-    if (!empty($signature)) {
+    // Standortinformationen
+    $geo_location = $_POST["geo_location"] ?? '';
+
+    // Kundenzusätzliche Infos
+    $customer_info = $_POST["customer_info"] ?? '';
+
+    // Unterschrift speichern
+    if (!empty($_POST["signature"])) {
         $signature_path = "../uploads/signature_" . time() . ".png";
-        $signature_data = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $signature));
+        $signature_data = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $_POST["signature"]));
         
         if ($signature_data) {
             file_put_contents($signature_path, $signature_data);
@@ -34,12 +46,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $signature_path = NULL;
     }
 
-    // Eintrag in die Datenbank
-    $stmt = $conn->prepare("INSERT INTO time_tracking (user_id, customer_name, customer_address, employee_name, start_time, end_time, break_time, total_time, start_location, end_location, customer_info, signature) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("isssssssssss", $user_id, $customer_name, $customer_address, $employee_name, $start_time, $end_time, $break_time, $total_time, $start_location, $end_location, $customer_info, $signature_path);
+    // SQL-Query für Eintrag in die `time_tracking`-Tabelle
+    $stmt = $conn->prepare("
+        INSERT INTO time_tracking 
+        (user_id, customer_firstname, customer_lastname, customer_address, customer_zip, customer_city, 
+        employee_name, work_date, start_time, end_time, break_time, total_time, geo_location, customer_info, signature) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+
+    // Richtige Anzahl an Parametern übergeben
+    $stmt->bind_param("issssssssssssss", 
+        $user_id, $customer_firstname, $customer_lastname, $customer_address, 
+        $customer_zip, $customer_city, $employee_name, $work_date, $start_time, 
+        $end_time, $break_time, $total_time, $geo_location, $customer_info, $signature_path
+    );
     
     if ($stmt->execute()) {
-        echo "Zeiterfassungsdaten erfolgreich gespeichert.";
+        // Erfolgreich gespeichert -> Weiterleitung zur Verlaufsseite
+        header("Location: ../html/history.html");
+        exit();
     } else {
         echo "Fehler bei der Speicherung: " . $stmt->error;
     }

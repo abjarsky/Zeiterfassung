@@ -13,6 +13,7 @@
             <ul>
                 <li><a href="dashboard.html">Dashboard</a></li>
                 <li><a href="history.html">Verlauf</a></li>
+                <li><a href="export.html">Export</a></li> 
                 <li><a href="../php/logout.php">Logout</a></li>
             </ul>
         </nav>
@@ -22,27 +23,44 @@
         <section>
             <h2>Arbeitszeit erfassen</h2>
             <form action="../php/save_time.php" method="POST">
-                <label for="customer_name">Kundenname:</label>
-                <input type="text" id="customer_name" name="customer_name" required>
-                
-                <label for="customer_address">Adresse:</label>
+                <label for="customer_firstname">Vorname:</label>
+                <input type="text" id="customer_firstname" name="customer_firstname" required>
+
+                <label for="customer_lastname">Nachname:</label>
+                <input type="text" id="customer_lastname" name="customer_lastname" required>
+
+                <label for="customer_address">Adresse (Straße, Hausnummer):</label>
                 <input type="text" id="customer_address" name="customer_address" required>
                 
+                <label for="customer_zip">PLZ:</label>
+                <input type="text" id="customer_zip" name="customer_zip" required>
+
+                <label for="customer_city">Ort:</label>
+                <input type="text" id="customer_city" name="customer_city" required>
+
                 <label for="employee_name">Mitarbeiter:</label>
                 <input type="text" id="employee_name" name="employee_name" required>
-                
-                <label for="start_time">Startdatum & Uhrzeit:</label>
-                <input type="datetime-local" id="start_time" name="start_time" required>
-                
-                <label for="end_time">Enddatum & Uhrzeit:</label>
-                <input type="datetime-local" id="end_time" name="end_time" required>
-                
+
+                <label for="work_date">Datum:</label>
+                <input type="date" id="work_date" name="work_date" required>
+
+                <label for="start_time">Startzeit:</label>
+                <input type="time" id="start_time" name="start_time" required>
+
+                <label for="end_time">Endzeit:</label>
+                <input type="time" id="end_time" name="end_time" required>
+
                 <label for="break_time">Pause (Minuten, optional):</label>
                 <input type="number" id="break_time" name="break_time" min="0">
-                
+
                 <label for="total_time">Automatisch berechnete Arbeitszeit:</label>
                 <input type="text" id="total_time" name="total_time" readonly>
-                
+                <button type="button" onclick="calculateTotalTime()">↻</button>
+
+                <label for="geo_location">Geografischer Standort:</label>
+                <input type="text" id="geo_location" name="geo_location" readonly>
+                <button type="button" onclick="getGeoLocation()">↻</button>
+
                 <button type="submit">Weiter zur Bestätigung</button>
             </form>
         </section>
@@ -56,8 +74,9 @@
     <footer>
         <p>&copy; 2025 Koria KFZ-Gutachter - Zeiterfassungssystem</p>
     </footer>
-    
+
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu3vsI-zYmc5Zoe1AeCJV92c08cdSBpfg&callback=initMap" async defer></script>
+    
     <script>
         function initMap() {
             var map = new google.maps.Map(document.getElementById('map'), {
@@ -66,17 +85,51 @@
             });
         }
 
-        document.getElementById("end_time").addEventListener("change", function() {
-            let start = new Date(document.getElementById("start_time").value);
-            let end = new Date(document.getElementById("end_time").value);
+        function calculateTotalTime() {
+            let startTime = document.getElementById("start_time").value;
+            let endTime = document.getElementById("end_time").value;
             let breakTime = parseInt(document.getElementById("break_time").value) || 0;
-            
-            if (start && end) {
-                let diff = (end - start) / (1000 * 60); // Minuten
-                let total = Math.max(0, diff - breakTime);
-                document.getElementById("total_time").value = total + " Minuten";
+
+            if (startTime && endTime) {
+                let start = new Date(`1970-01-01T${startTime}:00`);
+                let end = new Date(`1970-01-01T${endTime}:00`);
+                
+                if (end <= start) {
+                    document.getElementById("total_time").value = "Endzeit muss nach Startzeit sein";
+                    return;
+                }
+
+                let diffMinutes = (end - start) / (1000 * 60) - breakTime;
+
+                if (diffMinutes > 0) {
+                    let hours = Math.floor(diffMinutes / 60);
+                    let minutes = diffMinutes % 60;
+                    document.getElementById("total_time").value = hours + " Stunden " + minutes + " Minuten";
+                } else {
+                    document.getElementById("total_time").value = "0 Stunden 0 Minuten";
+                }
             }
-        });
+        }
+
+        document.getElementById("end_time").addEventListener("change", calculateTotalTime);
+        document.getElementById("start_time").addEventListener("change", calculateTotalTime);
+        document.getElementById("break_time").addEventListener("change", calculateTotalTime);
+
+        function getGeoLocation() {
+            let address = document.getElementById("customer_address").value + ", " +
+                          document.getElementById("customer_zip").value + " " +
+                          document.getElementById("customer_city").value;
+
+            let geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'address': address }, function(results, status) {
+                if (status === 'OK') {
+                    let location = results[0].geometry.location;
+                    document.getElementById("geo_location").value = location.lat() + ", " + location.lng();
+                } else {
+                    alert("Geocoding war nicht erfolgreich: " + status);
+                }
+            });
+        }
     </script>
 </body>
 </html>
