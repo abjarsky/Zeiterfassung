@@ -45,7 +45,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $signature_path = NULL;
     }
-
+// ✨ 🟢 **Kombiniere Datum & Zeit für Start & Ende**
+    $start_datetime = $work_date . " " . $start_time;
+    $end_datetime = $work_date . " " . $end_time;
     // SQL-Query für Eintrag in die `time_tracking`-Tabelle
     $stmt = $conn->prepare("
         INSERT INTO time_tracking 

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geografische Prüfung | Zeiterfassung</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu3vsI-zYmc5Zoe1AeCJV92c08cdSBpfg&callback=initMap" async defer></script>
+</head>
+<body>
+
+    <header>
+        <h1>Geografische Prüfung</h1>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="history.html">Verlauf</a></li>
+                <li><a href="geo_check.html">Geografische Prüfung</a></li>
+                <li><a href="export.html">Export</a></li>
+                <li><a href="../php/logout.php">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Adresse eingeben</h2>
+            <form id="geo-form">
+                <label for="address">Adresse:</label>
+                <input type="text" id="address" name="address" placeholder="Straße, Hausnummer, PLZ, Stadt" required>
+                
+                <button type="button" onclick="getGeoLocation()">Geografische Koordinaten abrufen</button>
+            </form>
+        </section>
+
+        <section>
+            <h3>Ergebnis</h3>
+            <label for="latitude">Breitengrad:</label>
+            <input type="text" id="latitude" readonly>
+
+            <label for="longitude">Längengrad:</label>
+            <input type="text" id="longitude" readonly>
+
+            <button type="button" onclick="saveGeoLocation()">Speichern</button>
+        </section>
+
+        <section>
+            <h3>Standort auf Karte</h3>
+            <div id="map" style="width: 100%; height: 400px;"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Koria KFZ-Gutachter - Zeiterfassungssystem</p>
+    </footer>
+
+    <script src="../js/geo_check.js"></script>
+
+</body>
+</html>
